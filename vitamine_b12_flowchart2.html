@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B12 / Folate — Diagnostic Algorithm</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #f7f6f2;
+  --surface:      #ffffff;
+  --border-muted: #dcdad2;
+  --line:         #5b6779;
+  --txt:          #18202e;
+  --txt-mid:      #4a5568;
+  --txt-light:    #8596a6;
+
+  --trigger-bg:   #eef3fc;
+  --trigger-acc:  #2c64b5;
+
+  --m-bg:         #f4f8ff;
+  --m-bd:         #1e3d78;
+  --m-txt:        #1e3d78;
+
+  --ok-bg:        #f0fdf5;
+  --ok-bd:        #16a34a;
+  --ok-txt:       #14532c;
+
+  --no-bg:        #fff8f0;
+  --no-bd:        #e96700;
+  --no-txt:       #7a2e00;
+}
+
+body {
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--txt);
+  padding: 52px 28px 72px;
+}
+
+.page { max-width: 840px; margin: 0 auto; }
+
+/* ── HEADER ── */
+header {
+  margin-bottom: 44px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--txt);
+}
+header h1 {
+  font-family: 'Lora', serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+header p {
+  margin-top: 6px;
+  font-size: 0.71rem;
+  color: var(--txt-light);
+  letter-spacing: 0.03em;
+}
+
+/* ── FLOW ── */
+.flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* ── BOXES ── */
+.box-trigger {
+  width: 100%;
+  max-width: 500px;
+  background: var(--trigger-bg);
+  border: 1.5px solid var(--border-muted);
+  border-left: 4px solid var(--trigger-acc);
+  border-radius: 4px;
+  padding: 14px 18px;
+}
+.box-trigger .lbl {
+  font-size: 0.84rem;
+  font-weight: 500;
+  margin-bottom: 9px;
+}
+.box-trigger ul { list-style: none; }
+.box-trigger li {
+  font-size: 0.78rem;
+  color: var(--txt-mid);
+  padding-left: 1.4em;
+  position: relative;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+.box-trigger li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--trigger-acc);
+  font-size: 0.62em;
+  top: 0.28em;
+}
+
+.box-measure {
+  border: 1.5px solid var(--m-bd);
+  background: var(--m-bg);
+  color: var(--m-txt);
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 11px 24px;
+  border-radius: 4px;
+}
+
+.box-ok {
+  background: var(--ok-bg);
+  border: 1.5px solid var(--ok-bd);
+  border-left: 4px solid var(--ok-bd);
+  color: var(--ok-txt);
+  font-weight: 500;
+  font-size: 0.79rem;
+  text-align: center;
+  padding: 11px 10px;
+  border-radius: 4px;
+  width: 100%;
+  line-height: 1.45;
+}
+
+.box-no {
+  background: var(--no-bg);
+  border: 1.5px solid var(--no-bd);
+  border-left: 4px solid var(--no-bd);
+  color: var(--no-txt);
+  font-weight: 500;
+  font-size: 0.79rem;
+  text-align: center;
+  padding: 11px 10px;
+  border-radius: 4px;
+  width: 100%;
+  line-height: 1.45;
+}
+
+/* ── CONNECTOR PRIMITIVES ── */
+.shaft {
+  width: 1.5px;
+  background: var(--line);
+  flex-shrink: 0;
+  align-self: center;
+}
+.sh12 { height: 12px; }
+.sh20 { height: 20px; }
+.sh28 { height: 28px; }
+
+.arow {
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--line);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* ── 3-WAY BRANCH SECTION ──────────────────────────────────────────────────
+   The H-bar is drawn by ::before, spanning from the centre of col-1 to the
+   centre of col-3. With 3 × flex:1 children and symmetric padding p:
+     col-i centre = (2i-1)/(2×3) × W  →  col-1 = W/6, col-3 = 5W/6
+   So  left: W/6  and  right: W/6  (distance from right edge = W - 5W/6 = W/6)
+   The p's cancel, so any equal left/right padding preserves the alignment. ─ */
+.bsec {
+  width: 100%;
+  display: flex;
+  position: relative;
+}
+.bsec::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left:  calc(100% / 6);
+  right: calc(100% / 6);
+  height: 1.5px;
+  background: var(--line);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bcol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 9px;
+}
+
+.blbl {
+  font-size: 0.73rem;
+  color: var(--txt-mid);
+  text-align: center;
+  line-height: 1.3;
+  padding: 5px 0;
+  min-height: 46px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.blbl strong { display: block; font-weight: 600; color: var(--txt); margin-top: 2px; }
+
+/* ── SUB 3-WAY (same geometry, inside centre col) ── */
+.ssec {
+  width: 100%;
+  display: flex;
+  position: relative;
+}
+.ssec::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left:  calc(100% / 6);
+  right: calc(100% / 6);
+  height: 1.5px;
+  background: var(--line);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.scol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.slbl {
+  font-size: 0.69rem;
+  color: var(--txt-mid);
+  text-align: center;
+  line-height: 1.3;
+  padding: 4px 0;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.slbl strong { font-weight: 600; color: var(--txt); display: block; margin-top: 2px; }
+
+/* ── LEGEND ── */
+.legend {
+  margin-top: 36px;
+  padding: 14px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border-muted);
+  border-radius: 4px;
+}
+.legend-title {
+  font-size: 0.67rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--txt);
+  margin-bottom: 10px;
+}
+.legend-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  font-size: 0.73rem;
+  color: var(--txt-mid);
+  line-height: 1.5;
+}
+.lk { font-weight: 600; color: var(--txt); white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Diagnostic Algorithm — Suspected Vitamin B12 or Folate Deficiency</h1>
+    <p>Source: UpToDate &nbsp;·&nbsp; Refer to laboratory-specific lower limits of normal</p>
+  </header>
+
+  <div class="flow">
+
+    <!-- ① TRIGGER BOX -->
+    <div class="box-trigger">
+      <div class="lbl">Suspected vitamin B12 or folate deficiency — ≥ 1 criterion:</div>
+      <ul>
+        <li>Underlying condition or diet associated with deficiency</li>
+        <li>Macrocytic anemia with low reticulocyte count</li>
+        <li>Mild pancytopenia</li>
+        <li>Hypersegmented neutrophils</li>
+        <li>Unexplained neuropsychiatric abnormalities</li>
+      </ul>
+    </div>
+
+    <div class="shaft sh28"></div>
+    <div class="arow"></div>
+
+    <!-- ② MEASURE B12 + FOLATE -->
+    <div class="box-measure">Measure serum vitamin B12 and folate levels *</div>
+
+    <!-- shaft connects bottom of Measure-B12 to the H-bar of bsec -->
+    <div class="shaft sh28"></div>
+
+    <!-- ③ 3-WAY BRANCH SECTION — H-bar drawn by bsec::before -->
+    <div class="bsec">
+
+      <!-- COL 1 — deficient -->
+      <div class="bcol">
+        <div class="shaft sh20"></div>
+        <div class="blbl">One or both levels<strong>deficient</strong></div>
+        <div class="arow"></div>
+        <div class="shaft sh12"></div>
+        <div class="box-ok">
+          Vitamin B12 and/or folate<br>deficiency <strong>confirmed ¶</strong>
+        </div>
+      </div>
+
+      <!-- COL 2 — borderline → MMA route -->
+      <div class="bcol">
+        <div class="shaft sh20"></div>
+        <div class="blbl">One or both levels<strong>borderline</strong></div>
+        <div class="arow"></div>
+        <div class="shaft sh12"></div>
+        <div class="box-measure" style="width:100%; font-size:0.81rem; padding:10px 14px;">
+          Measure <strong>MMA</strong> and <strong>homocysteine</strong>
+        </div>
+
+        <!-- shaft connects Measure-MMA to sub H-bar -->
+        <div class="shaft sh28"></div>
+
+        <!-- ③a SUB 3-WAY — H-bar drawn by ssec::before -->
+        <div class="ssec">
+
+          <!-- Sub-col 1: MMA↑ Hcy↑ → B12 confirmed -->
+          <div class="scol">
+            <div class="shaft sh20"></div>
+            <div class="slbl">MMA ↑<strong>Hcy ↑</strong></div>
+            <div class="arow"></div>
+            <div class="shaft sh12"></div>
+            <div class="box-ok" style="font-size:0.72rem; padding:9px 6px; border-left-width:3px;">
+              B12 deficiency<br><strong>confirmed ¶</strong>
+            </div>
+          </div>
+
+          <!-- Sub-col 2: MMA N Hcy↑ → Folate confirmed -->
+          <div class="scol">
+            <div class="shaft sh20"></div>
+            <div class="slbl">MMA normal<strong>Hcy ↑</strong></div>
+            <div class="arow"></div>
+            <div class="shaft sh12"></div>
+            <div class="box-ok" style="font-size:0.72rem; padding:9px 6px; border-left-width:3px;">
+              Folate deficiency<br><strong>confirmed ¶</strong>
+            </div>
+          </div>
+
+          <!-- Sub-col 3: MMA N Hcy N → Excluded -->
+          <div class="scol">
+            <div class="shaft sh20"></div>
+            <div class="slbl">MMA normal<strong>Hcy normal</strong></div>
+            <div class="arow"></div>
+            <div class="shaft sh12"></div>
+            <div class="box-no" style="font-size:0.72rem; padding:9px 6px; border-left-width:3px;">
+              B12 &amp; folate deficiencies<br><strong>excluded</strong>
+            </div>
+          </div>
+
+        </div><!-- end ssec -->
+      </div><!-- end COL 2 -->
+
+      <!-- COL 3 — normal -->
+      <div class="bcol">
+        <div class="shaft sh20"></div>
+        <div class="blbl">Both levels<strong>normal</strong></div>
+        <div class="arow"></div>
+        <div class="shaft sh12"></div>
+        <div class="box-no">
+          Vitamin B12 and folate<br>deficiencies <strong>excluded</strong>
+        </div>
+      </div>
+
+    </div><!-- end bsec -->
+
+  </div><!-- end flow -->
+
+  <!-- LEGEND — abbreviations only -->
+  <div class="legend">
+    <div class="legend-title">Abbreviations &amp; symbols</div>
+    <div class="legend-grid">
+      <span class="lk">MMA</span><span>methylmalonic acid</span>
+      <span class="lk">Hcy</span><span>homocysteine</span>
+      <span class="lk">↑</span><span>elevated above upper limit of normal</span>
+      <span class="lk">¶</span><span>further investigation required to identify the underlying cause (pernicious anemia, malabsorption, medications, dietary)</span>
+      <span class="lk">*</span><span>some clinicians may choose an alternate algorithm depending on patient factors</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
