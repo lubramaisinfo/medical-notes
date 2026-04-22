@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vitamin B12 & Folate Deficiency — Diagnostic Algorithm</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --paper: #ffffff;
+    --ink: #1a1a1a;
+    --ink-light: #5a5a5a;
+    --accent: #2c5f8a;
+    --accent-light: #e8f1f8;
+    --confirmed: #1e5c3a;
+    --confirmed-bg: #e8f4ed;
+    --excluded: #6b4c14;
+    --excluded-bg: #fdf3e3;
+    --border: #d0cdc6;
+    --arrow: #666;
+    --step-bg: #f0eff9;
+    --step-border: #7c78c8;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 48px 24px;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  header h1 {
+    font-family: 'Source Serif 4', serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    color: var(--ink);
+    max-width: 600px;
+  }
+
+  header p {
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    font-style: italic;
+  }
+
+  /* ── FLOWCHART ── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* Generic box */
+  .box {
+    background: var(--paper);
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 20px;
+    font-size: 0.84rem;
+    line-height: 1.5;
+    text-align: center;
+    position: relative;
+  }
+
+  .box.trigger {
+    width: 100%;
+    max-width: 560px;
+    text-align: left;
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .box.trigger strong {
+    display: block;
+    font-size: 0.88rem;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+
+  .box.trigger ul {
+    list-style: none;
+    padding: 0;
+  }
+  .box.trigger ul li {
+    padding-left: 1.2em;
+    position: relative;
+    margin-bottom: 3px;
+    font-size: 0.82rem;
+    color: var(--ink);
+  }
+  .box.trigger ul li::before {
+    content: '▪';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  .box.measure {
+    max-width: 420px;
+    background: var(--paper);
+    border-color: var(--ink);
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  .box.measure span {
+    font-size: 0.72rem;
+    color: var(--ink-light);
+    display: block;
+    margin-top: 2px;
+    font-weight: 300;
+  }
+
+  .box.confirmed {
+    background: var(--confirmed-bg);
+    border-color: var(--confirmed);
+    color: var(--confirmed);
+    font-weight: 600;
+    font-size: 0.84rem;
+    max-width: 200px;
+  }
+
+  .box.excluded {
+    background: var(--excluded-bg);
+    border-color: var(--excluded);
+    color: var(--excluded);
+    font-weight: 600;
+    font-size: 0.84rem;
+    max-width: 200px;
+  }
+
+  /* Arrow */
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    color: var(--arrow);
+  }
+
+  .arrow-line {
+    width: 1.5px;
+    height: 28px;
+    background: var(--arrow);
+  }
+
+  .arrow-head {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid var(--arrow);
+  }
+
+  /* Branch row */
+  .branch-row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+    margin-top: 0;
+  }
+
+  /* Horizontal connector bar */
+  .h-bar {
+    width: 100%;
+    max-width: 720px;
+    height: 2px;
+    background: var(--arrow);
+    position: relative;
+    margin: 0 auto;
+  }
+
+  /* Branch container */
+  .branches {
+    width: 100%;
+    max-width: 720px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 0 auto;
+  }
+
+  .branch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .branch-label {
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    font-style: italic;
+    text-align: center;
+    padding: 6px 8px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Sub-branch (MMA results) */
+  .sub-branches {
+    width: 100%;
+    max-width: 580px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 0 auto;
+  }
+
+  .sub-branch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .sub-label {
+    font-size: 0.75rem;
+    color: var(--ink);
+    text-align: center;
+    padding: 6px 6px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.3;
+  }
+
+  .sub-label em {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  /* Connector dots for branch tops */
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--arrow);
+    margin-bottom: -1px;
+  }
+
+  /* ── FOOTNOTES ── */
+  .footnotes {
+    margin-top: 36px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 0.76rem;
+    color: var(--ink-light);
+    line-height: 1.6;
+  }
+
+  .footnotes h3 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-size: 0.78rem;
+  }
+
+  .ref-table th {
+    background: var(--accent);
+    color: white;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 500;
+  }
+
+  .ref-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ref-table tr:nth-child(even) td { background: #f9f8f5; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+  .tag.low { background: #fde8e8; color: #8b1a1a; }
+  .tag.border { background: #fdf3e3; color: #7a5000; }
+  .tag.normal { background: var(--confirmed-bg); color: var(--confirmed); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Diagnostic Algorithm — Suspected Vitamin B12 or Folate Deficiency</h1>
+    <p>Source: UpToDate &nbsp;·&nbsp; Refer to laboratory-specific lower limits of normal</p>
+  </header>
+
+  <div class="flow">
+
+    <!-- STEP 1: Suspicion -->
+    <div class="box trigger">
+      <strong>Suspected vitamin B12 or folate deficiency based on ≥ 1 of the following:</strong>
+      <ul>
+        <li>Underlying condition or diet associated with deficiency</li>
+        <li>Macrocytic anemia with low reticulocyte count</li>
+        <li>Mild pancytopenia</li>
+        <li>Hypersegmented neutrophils</li>
+        <li>Unexplained neuropsychiatric abnormalities</li>
+      </ul>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+    <!-- STEP 2: Measure -->
+    <div class="box measure">
+      Measure serum vitamin B12 and folate levels
+      <span>* Some clinicians may choose an alternate algorithm depending on patient factors</span>
+    </div>
+
+    <!-- Horizontal bar + 3 branches -->
+    <div style="width:100%;max-width:720px;margin-top:28px;">
+      <div style="display:flex;justify-content:space-between;max-width:720px;margin:0 auto;padding:0 60px;">
+        <span class="branch-label" style="width:33%">One or both levels<br><strong>deficient</strong></span>
+        <span class="branch-label" style="width:33%;text-align:center">One or both levels<br><strong>borderline</strong></span>
+        <span class="branch-label" style="width:33%;text-align:right">Both levels<br><strong>normal</strong></span>
+      </div>
+      <!-- H bar -->
+      <div style="position:relative;max-width:720px;margin:0 auto;">
+        <div style="height:2px;background:var(--arrow);width:100%;"></div>
+        <!-- Left tick -->
+        <div style="position:absolute;left:10%;top:0;width:1.5px;height:20px;background:var(--arrow);"></div>
+        <!-- Center tick -->
+        <div style="position:absolute;left:50%;top:0;width:1.5px;height:20px;background:var(--arrow);transform:translateX(-50%)"></div>
+        <!-- Right tick -->
+        <div style="position:absolute;right:10%;top:0;width:1.5px;height:20px;background:var(--arrow);"></div>
+      </div>
+
+      <!-- 3 outcome columns -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;max-width:720px;margin:0 auto;padding-top:20px;">
+
+        <!-- Left: deficient -->
+        <div class="branch">
+          <div class="arrow-head" style="margin-bottom:8px;"></div>
+          <div class="box confirmed" style="max-width:100%;">
+            Vitamin B12 and/or folate deficiency <strong>confirmed</strong> ¶
+          </div>
+        </div>
+
+        <!-- Center: borderline → MMA -->
+        <div class="branch">
+          <div class="arrow-head" style="margin-bottom:8px;"></div>
+          <div class="box measure" style="max-width:100%;font-size:0.82rem;">
+            Measure <strong>MMA</strong> and <strong>homocysteine</strong>
+          </div>
+          <!-- sub h-bar -->
+          <div style="position:relative;width:100%;margin-top:20px;">
+            <div style="height:2px;background:var(--arrow);width:100%;"></div>
+            <div style="position:absolute;left:15%;top:0;width:1.5px;height:18px;background:var(--arrow);"></div>
+            <div style="position:absolute;left:50%;top:0;width:1.5px;height:18px;background:var(--arrow);transform:translateX(-50%)"></div>
+            <div style="position:absolute;right:15%;top:0;width:1.5px;height:18px;background:var(--arrow);"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%;padding-top:18px;">
+            <div class="sub-branch">
+              <div class="sub-label"><em>MMA ↑<br>Hcy ↑</em></div>
+              <div class="arrow-head" style="margin-bottom:6px;"></div>
+              <div class="box confirmed" style="max-width:100%;font-size:0.75rem;padding:10px;">
+                B12 deficiency <strong>confirmed</strong> ¶
+              </div>
+            </div>
+            <div class="sub-branch">
+              <div class="sub-label"><em>MMA N<br>Hcy ↑</em></div>
+              <div class="arrow-head" style="margin-bottom:6px;"></div>
+              <div class="box confirmed" style="max-width:100%;font-size:0.75rem;padding:10px;">
+                Folate deficiency <strong>confirmed</strong> ¶
+              </div>
+            </div>
+            <div class="sub-branch">
+              <div class="sub-label"><em>MMA N<br>Hcy N</em></div>
+              <div class="arrow-head" style="margin-bottom:6px;"></div>
+              <div class="box excluded" style="max-width:100%;font-size:0.75rem;padding:10px;">
+                B12 & folate deficiencies <strong>excluded</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: normal -->
+        <div class="branch">
+          <div class="arrow-head" style="margin-bottom:8px;"></div>
+          <div class="box excluded" style="max-width:100%;">
+            Vitamin B12 and folate deficiencies <strong>excluded</strong>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- end flow -->
+
+  <!-- REFERENCE VALUES -->
+  <div class="footnotes">
+    <h3>Reference values</h3>
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Marker</th>
+          <th>Deficient</th>
+          <th>Borderline</th>
+          <th>Normal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Vitamin B12</strong></td>
+          <td><span class="tag low">&lt; 200 pg/mL</span></td>
+          <td><span class="tag border">200 – 300 pg/mL</span></td>
+          <td><span class="tag normal">&gt; 300 pg/mL</span></td>
+        </tr>
+        <tr>
+          <td><strong>Folate</strong></td>
+          <td><span class="tag low">&lt; 2 ng/mL</span></td>
+          <td><span class="tag border">2 – 4 ng/mL</span></td>
+          <td><span class="tag normal">&gt; 4 ng/mL</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:14px;">
+      <strong>¶</strong> Once deficiency is confirmed, further investigation is indicated to identify the underlying cause (pernicious anemia, malabsorption, dietary, medications, etc.).<br>
+      <strong>MMA</strong> = methylmalonic acid &nbsp;·&nbsp; <strong>Hcy</strong> = homocysteine &nbsp;·&nbsp; <strong>N</strong> = normal
+    </p>
+  </div>
+
+</div>
+</body>
+</html>
